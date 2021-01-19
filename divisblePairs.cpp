@@ -74,6 +74,9 @@ vector<int> addVec(vector<int> one, vector<int> two){
 }
 
 vector<int> largest_divisible_pairs(vector<int> vector){
+    std::vector<int>maximum;
+    
+    
     // create sublist of everything except first number
     // get the index of the first number in sublist that can be evenly divided
     // add first number to curr list
@@ -88,32 +91,35 @@ vector<int> largest_divisible_pairs(vector<int> vector){
         return {subVec(vector,0,1)};
     }
     
-    std::vector<int> maximum = {};
-    std::vector<int> currList;
-
     for(size_t i = 0; i< vector.size(); i++){
+        std::vector<int> currList;
         int firstNum = vector.at(i);
         
+        //create the subVector
         
-        std::vector<int> subVector = subVec(vector, 1, vector.size());
+        int numIndex = 1;
+        
+        //if we find a valid divisible integer in our vector
 
 
-        int numIndex = divIndex(subVector);
-        // add currNum, and if it has compatible match, recursively call to sublist
-        currList.push_back(firstNum);
+        //[56,28,24,22...]
 
+        currList.push_back(vector.at(0));
+        std::vector<int> subVector = subVec(vector, 0, vector.size());  
 
-        if(numIndex != -1){
-            largest_divisible_pairs(subVector); 
+        //[28,24,22]          
+        while(numIndex != -1){
+            //[24,22...]
+            subVector = subVec(subVector, numIndex, subVector.size());
+            numIndex = divIndex(subVector);  
+            currList.push_back(subVector.at(0)); // add the first number to the List
+            cout << vector_to_string(currList) << endl;
         }
-        else{
-            if(currList.size() > maximum.size()){
-                maximum = currList;
-            }
-            return maximum;
+        if(currList.size() > maximum.size() ){
+            maximum = currList;
         }
     }
-    return {1};
+    return {maximum};
 }
 
 

@@ -1,22 +1,22 @@
 #include <iostream>
 #include <vector>
 #include <string> 
-#include <algorithm>
+#include <algorithm> // outsourcing the sort algorithm
+#include <cassert>
 using namespace std;
 
-
-/*
-GENERAL ALGORITHM:
-1. Take a vector of integers
-2. Sort the vector from highest to lowest
-3. Starting from leftmost integer, find the index of the nearest number that is evenly divisible 
-4. If it is divisible update currVector (container for storing optimal vector given this int)
-5. If legal and longest thus far... update maxVector
-6. If not, discard at the end of iteration
-7. Test:
-8. Given a sorted combination of integers, find the smallest in vector, check if all other numbers can divide evenly into smallest number
-*/
-
+void checkList(vector<int> vector){
+    for(size_t i = 0; i< vector.size()-1; i++){
+        if(vector.at(i) == vector.at(i+1)){
+            cout << "WHY?";
+            exit(1);
+        }
+        if(vector.at(i) < 1){
+            cout << "WHY?";
+            exit(2);
+        }
+    }
+}
 
 vector<int> revSort(vector<int> &vector){
     std::sort(vector.begin(), vector.end());
@@ -75,8 +75,10 @@ vector<int> addVec(vector<int> one, vector<int> two){
 
 vector<int> largest_divisible_pairs(vector<int> vector){
     std::vector<int>maximum;
+    checkList(vector);
     
-    
+    revSort(vector); // sort numbers in descending order
+
     // create sublist of everything except first number
     // get the index of the first number in sublist that can be evenly divided
     // add first number to curr list
@@ -92,8 +94,8 @@ vector<int> largest_divisible_pairs(vector<int> vector){
     }
     
     for(size_t i = 0; i< vector.size(); i++){
+        
         std::vector<int> currList;
-        int firstNum = vector.at(i);
         
         //create the subVector
         
@@ -104,32 +106,29 @@ vector<int> largest_divisible_pairs(vector<int> vector){
 
         //[56,28,24,22...]
 
-        currList.push_back(vector.at(0));
-        std::vector<int> subVector = subVec(vector, 0, vector.size());  
+        // currList.push_back(vector.at(0));
+        std::vector<int> subVector = subVec(vector, i, vector.size());  
 
         //[28,24,22]          
         while(numIndex != -1){
             //[24,22...]
-            subVector = subVec(subVector, numIndex, subVector.size());
-            numIndex = divIndex(subVector);  
             currList.push_back(subVector.at(0)); // add the first number to the List
-            cout << vector_to_string(currList) << endl;
+            numIndex = divIndex(subVector);  
+            subVector = subVec(subVector, numIndex, subVector.size());
         }
         if(currList.size() > maximum.size() ){
             maximum = currList;
         }
+        currList.clear();
     }
-    return {maximum};
+    return maximum;
 }
 
 
 int main() {
-    vector<int> numbers = {28, 22, 7, 2, 8, 14, 24, 56};
-    revSort(numbers); // sort numbers in descending order
-    cout << vector_to_string(numbers);
-    cout << divIndex(numbers); // print the index of the first number evenly by the vector's largest num
+    vector<int> numbers = {2,3,4,5,6,7,8,16,50};
     
-    cout << vector_to_string(largest_divisible_pairs(numbers));
+    cout << vector_to_string(largest_divisible_pairs(numbers)) << endl;
 
     return 0;
 }

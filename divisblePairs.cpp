@@ -5,26 +5,26 @@
 #include <assert.h>
 using namespace std;
 
-void checkList(vector<int> vector){
-    
+// simple check of user Inputs [no repeated #, no negative ints, no zeros]
+void checkList(vector<int> vector){   
 if((vector.size() == 1) && (vector.at(0) < 1)){
     cout << "ERROR: Invalid number in vector" << endl;
-    exit(0);
+    exit(1);
 }
-    
     for(size_t i = 0; i< vector.size()-1; i++){
         
         if(vector.at(i) == vector.at(i+1)){
             cout << "ERROR: Repeated number in vector ";
-            exit(1);
+            exit(2);
         }
         if(vector.at(i) < 1){
             cout << "ERROR: Invalid number in vector";
-            exit(2);
+            exit(3);
         }
     }
 }
 
+//Sorts given vector in descending order
 vector<int> revSort(vector<int> &vector){
     std::sort(vector.begin(), vector.end());
     std::reverse(vector.begin(), vector.end());
@@ -40,7 +40,7 @@ vector<int> subVec(vector<int> vector,unsigned int start,unsigned int end){
     return subVec;
 }
 
-// used for debugging, not called in main()
+// used for debugging and printing
 string vector_to_string(vector<int> numList){
     string numString ("[");
     if(numList.size() == 0){
@@ -57,12 +57,15 @@ string vector_to_string(vector<int> numList){
 // given a vector, returns the index of the first number that is evenly divisible by the target number
 int divIndex(vector<int> vector){
     
+    // if there is an empty vector, there is no possible divisible number!
     if(vector.size() == 0){
         return -1;
     }
 
+    //find largest number, we are going to see what is the first valid denominator
     int largest = vector.at(0);
 
+    //If the largest number % smallest = 0, it is divisible, return its index!
     for(size_t i = 1; i < vector.size(); i++){
         int curr = vector.at(i);
         if (largest % curr == 0){
@@ -71,63 +74,56 @@ int divIndex(vector<int> vector){
     }
     return -1;
 }
-
-// adds values of one vector to another
-vector<int> addVec(vector<int> one, vector<int> two){
-    for(size_t i = 0; i < two.size(); i++){
-        one.push_back(two.at(i));
-    }
-    return one;
-}
+/*  
+GENERAL ALGORITHM: 
+1)  create sublist of everything except first number
+2)  get the index of the first number in sublist that can be evenly divided
+3)  If a valid number was found, add the first number to curr list
+4)  recursively call on the matching index
+5)  If one was not found, end the current iteration (stop adding to currList)
+6)  At every iteration, this will create a vector of valid integers (all divisible by each other)
+7)  when finished with each iteration, check if given CurrList is the greatest one thus far, if so, set maximum to this list
+*/
 
 vector<int> largest_divisible_pairs(vector<int> vector){
     std::vector<int>maximum;
     
-    revSort(vector); // sort numbers in descending order
+    revSort(vector); 
+    // sort numbers in descending order to make use of divisive properties
+    // if numbers are sorted, we can iterate through all numbers in the sorted vector
+    // knowing that the first number at each iteration represents the largest number
 
-    // create sublist of everything except first number
-    // get the index of the first number in sublist that can be evenly divided
-    // add first number to curr list
-    // recursively call on the first matching index
-    // when finished, check if the finalCurrList is the greatest one thus far
     
+    // basic check of edge case, empty list
     if(vector.size() == 0){
         return {};
     }
 
+    // basic check of edge case, single number, simply return the number
     if(vector.size() == 1){
         checkList(vector);
         return {subVec(vector,0,1)};
     }
     
-    checkList(vector);
-    for(size_t i = 0; i< vector.size(); i++){
-        
-        std::vector<int> currList;
-        
-        //create the subVector
-        
-        int numIndex = 1;
-        
-        //if we find a valid divisible integer in our vector
+    checkList(vector); // check if the given vector is valid first
 
+    for(size_t i = 0; i< vector.size(); i++){        
+        int numIndex = 1; // set to one so that we can enter coming while loop
+        
+        std::vector<int> currList; // stores list of valid number combinations of each iteration 
+        std::vector<int> subVector = subVec(vector, i, vector.size()); // creates for recursive call of divIndex() using previous answers
 
-        //[56,28,24,22...]
-
-        // currList.push_back(vector.at(0));
-        std::vector<int> subVector = subVec(vector, i, vector.size());  
-
-        //[28,24,22]          
+        // if we have not yet found all the valid values featuring the first number of this iteration
+        // keep looking for the rest!
         while(numIndex != -1){
-            //[24,22...]
-            currList.push_back(subVector.at(0)); // add the first number to the List
-            numIndex = divIndex(subVector);  
-            subVector = subVec(subVector, numIndex, subVector.size());
+            currList.push_back(subVector.at(0));                       // if we have not reached the end of this iteration's list, add first number
+            numIndex = divIndex(subVector);                            // find the index of the next number of the list
+            subVector = subVec(subVector, numIndex, subVector.size()); // recursively call divIndex() on the next iteration
         }
         if(currList.size() > maximum.size() ){
-            maximum = currList;
+            maximum = currList;   // update maximum to currList if this is the greatest thus far
         }
-        currList.clear();
+        currList.clear(); // clear currList for use in next iteration
     }
     return maximum;
 }
@@ -179,8 +175,10 @@ void test(){
 }
 
 int main() {
-    test();
-    vector<int> numbers = {-1};
+    test(); // test function
+    
+    // sample output
+    vector<int> numbers = {28, 22, 7, 2, 8, 14, 24, 56};
     cout << "Input: " << vector_to_string(numbers) << endl;
     cout << "Answer: " <<vector_to_string(largest_divisible_pairs(numbers)) << endl;
 

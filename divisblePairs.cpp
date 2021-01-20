@@ -87,7 +87,8 @@ GENERAL ALGORITHM:
 
 vector<int> largest_divisible_pairs(vector<int> vector){
     std::vector<int>maximum;
-    
+    std::vector<int> indices(vector.size());
+    std::vector<int> optimalSolutionSize(vector);
     revSort(vector); 
     // sort numbers in descending order to make use of divisive properties
     // if numbers are sorted, we can iterate through all numbers in the sorted vector
@@ -107,25 +108,33 @@ vector<int> largest_divisible_pairs(vector<int> vector){
     
     checkList(vector); // check if the given vector is valid first
 
-    for(size_t i = 0; i< vector.size(); i++){        
-        int numIndex = 1; // set to one so that we can enter coming while loop
+    int numIndex = 1; // set to one so that we can enter coming while loop
         
-        std::vector<int> currList; // stores list of valid number combinations of each iteration 
-        std::vector<int> subVector = subVec(vector, i, vector.size()); // creates for recursive call of divIndex() using previous answers
+    std::vector<int> currList; // stores list of valid number combinations of each iteration 
+    std::vector<int> subVector = subVec(vector, 0, vector.size()); // creates for recursive call of divIndex() using previous answers
 
-        // if we have not yet found all the valid values featuring the first number of this iteration
-        // keep looking for the rest!
-        while(numIndex != -1){
-            currList.push_back(subVector.at(0));                       // if we have not reached the end of this iteration's list, add first number
-            numIndex = divIndex(subVector);                            // find the index of the next number of the list
-            subVector = subVec(subVector, numIndex, subVector.size()); // recursively call divIndex() on the next iteration
-        }
-        if(currList.size() > maximum.size() ){
-            maximum = currList;   // update maximum to currList if this is the greatest thus far
-        }
-        currList.clear(); // clear currList for use in next iteration
+    // if we have not yet found all the valid values featuring the first number of this iteration
+    // keep looking for the rest!
+    while(numIndex != -1){
+    currList.push_back(subVector.at(0));                       // if we have not reached the end of this iteration's list, add first number
+    numIndex = divIndex(subVector);                            // find the index of the next number of the list
+    subVector = subVec(subVector, numIndex, subVector.size()); // recursively call divIndex() on the next iteration
+    // cout << vector_to_string(currList) << endl << endl;
     }
-    return maximum;
+
+    subVector = subVec(vector, 1, vector.size()); // creates for recursive call of divIndex() using previous answers
+
+    std::vector<int> recur = largest_divisible_pairs(subVector);
+    // cout << vector_to_string(currList) << " CurrList" << endl;
+    // cout << vector_to_string(subVector) << " Subvector" << endl;
+    if(currList.size() >= recur.size()){
+        return currList;   // update maximum to currList if this is the greatest thus far
+    // optimalSolutionSize.
+    }
+    else {
+        return recur;
+    }
+    
 }
 
 void test(){
@@ -175,10 +184,10 @@ void test(){
 }
 
 int main() {
-    test(); // test function
+     test(); // test function
     
     // sample output
-    vector<int> numbers = {28, 22, 7, 2, 8, 14, 24, 56};
+    vector<int> numbers = {7,2,8};
     cout << "Input: " << vector_to_string(numbers) << endl;
     cout << "Answer: " <<vector_to_string(largest_divisible_pairs(numbers)) << endl;
 

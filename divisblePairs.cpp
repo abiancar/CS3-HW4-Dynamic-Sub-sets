@@ -7,19 +7,22 @@ using namespace std;
 
 
 /*
-COMMENTS: 
 
+COMMENTS:
+My previous program (the recursive commit) had a time Complexity greater than O(n!)* n + n log n  Not very good:
+1) I first sorted the input (n log n) +
+2) I checked the list to see if it was valid (O n) +
+3) I do a recursive call for each number of the original list (O n) X
+4) Within each for loop I call the DivIndex() function [On] on each subList O(n!)
+5) And when I found the result of each iteration I compared it with the maximum of previous iterations (O 1) insignificant
 
-
-
-
-
+My new program has a time complexity of approx O(n!)+ n log n, a bit better
+1) I first sorted the input (n log n) +
+2) I checked the list to see if it was valid (O n) +
+3) I do a search for the index of the number of each 'iteration' (On) +
+4) I check for the previous answer to update (O n)
+5) Within each for loop I call the DivIndex() function [On] on each subList O(n!)
 */
-
-
-
-
-
 
 
 // simple check of user Inputs [no repeated #, no negative ints, no zeros]

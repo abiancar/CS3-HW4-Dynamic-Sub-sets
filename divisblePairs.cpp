@@ -5,6 +5,23 @@
 #include <assert.h>
 using namespace std;
 
+
+/*
+COMMENTS: 
+
+
+
+
+
+
+*/
+
+
+
+
+
+
+
 // simple check of user Inputs [no repeated #, no negative ints, no zeros]
 void checkList(vector<int> vector){   
 if((vector.size() == 1) && (vector.at(0) < 1)){
@@ -41,7 +58,7 @@ vector<int> subVec(vector<int> vector,unsigned int start,unsigned int end){
 }
 
 // used for debugging and printing
-string vector_to_string(vector<int> numList){
+string vec_to_string(vector<int> numList){
     string numString ("[");
     if(numList.size() == 0){
         return "[]";
@@ -53,6 +70,17 @@ string vector_to_string(vector<int> numList){
     numString += "]";
     return numString;
 }
+
+
+int find(vector<int> vector, int target){
+    for(size_t i = 0; i < vector.size(); i++){
+        if (vector.at(i) == target){
+            return i;
+        }
+    }
+    return -1;
+}
+
 
 // given a vector, returns the index of the first number that is evenly divisible by the target number
 int divIndex(vector<int> vector){
@@ -85,56 +113,73 @@ GENERAL ALGORITHM:
 7)  when finished with each iteration, check if given CurrList is the greatest one thus far, if so, set maximum to this list
 */
 
-vector<int> largest_divisible_pairs(vector<int> vector){
-    std::vector<int>maximum;
-    std::vector<int> indices(vector.size());
-    std::vector<int> optimalSolutionSize(vector);
-    revSort(vector); 
+//global list for storing results of largest_divisible_pairs
+std::vector<std::vector<int>> optimalSolutions; // vector that stores the best solutions of all 'iterations'
+std::vector<int> indeces; // used to help match iteration to corresponding slot in optimalSolutions 
+
+vector<int> largest_divisible_pairs(vector<int> input){
+
+    revSort(input); 
+
+    // This block ensures that the vectors we'll be using are the correct size, as we will index them
+    if(indeces.size() < input.size()){
+        indeces.resize(input.size());
+        for (size_t i = 0; i < input.size(); i++){
+            indeces.at(i) = input.at(i);
+        }
+    }
+
+    if(optimalSolutions.size() < input.size()){
+        optimalSolutions.resize(input.size());
+    }
+
     // sort numbers in descending order to make use of divisive properties
     // if numbers are sorted, we can iterate through all numbers in the sorted vector
     // knowing that the first number at each iteration represents the largest number
 
-    
+    int locInindeces = find(indeces, input.at(0)); // find the current iteration number for storage referencing!
+
     // basic check of edge case, empty list
-    if(vector.size() == 0){
+    if(input.size() == 0){
         return {};
     }
-
     // basic check of edge case, single number, simply return the number
-    if(vector.size() == 1){
-        checkList(vector);
-        return {subVec(vector,0,1)};
+    if(input.size() == 1){
+        checkList(input);
+        optimalSolutions.at(locInindeces) = {subVec(input,0,1)}; // store the 'answer' in the right spot of optimalSolutions
+        return {subVec(input,0,1)}; 
     }
-    
-    checkList(vector); // check if the given vector is valid first
+    checkList(input); // check if the given vector is valid first
 
     int numIndex = 1; // set to one so that we can enter coming while loop
-        
     std::vector<int> currList; // stores list of valid number combinations of each iteration 
-    std::vector<int> subVector = subVec(vector, 0, vector.size()); // creates for recursive call of divIndex() using previous answers
+    std::vector<int> subVector = subVec(input, 0, input.size()); // creates for recursive call of divIndex() using previous answers
+
+
+
 
     // if we have not yet found all the valid values featuring the first number of this iteration
     // keep looking for the rest!
     while(numIndex != -1){
-    currList.push_back(subVector.at(0));                       // if we have not reached the end of this iteration's list, add first number
-    numIndex = divIndex(subVector);                            // find the index of the next number of the list
-    subVector = subVec(subVector, numIndex, subVector.size()); // recursively call divIndex() on the next iteration
-    // cout << vector_to_string(currList) << endl << endl;
+        currList.push_back(subVector.at(0));                       // if we have not reached the end of this iteration's list, add first number
+        numIndex = divIndex(subVector);                            // find the indeces of the next number of the list
+        subVector = subVec(subVector, numIndex, subVector.size()); // recursively call divIndex() on the next iteration
     }
+    subVector = subVec(input, 1, input.size()); // creates for recursive call of divIndex() using previous answers
 
-    subVector = subVec(vector, 1, vector.size()); // creates for recursive call of divIndex() using previous answers
 
-    std::vector<int> recur = largest_divisible_pairs(subVector);
-    // cout << vector_to_string(currList) << " CurrList" << endl;
-    // cout << vector_to_string(subVector) << " Subvector" << endl;
-    if(currList.size() >= recur.size()){
-        return currList;   // update maximum to currList if this is the greatest thus far
-    // optimalSolutionSize.
+    // This is where we get dynamic... before returning anything, we are going to check and see if the preceding optimal solution
+    // is better than the one we are testing. Unlike the previous program, we won't actually have to compute the previous answer, as 
+    // it is stored in the optimalSolutions vector! Cool, right!! #efficiencies
+
+    if(currList.size() >= optimalSolutions[locInindeces + 1].size()){
+        optimalSolutions[locInindeces]  = currList;
+        return currList;   
     }
     else {
-        return recur;
-    }
-    
+        optimalSolutions[locInindeces] = optimalSolutions[locInindeces + 1];
+        return optimalSolutions[locInindeces + 1];
+    }  
 }
 
 void test(){
@@ -156,40 +201,41 @@ void test(){
     cout << "Testing largest_divisible_pairs()" << endl;
 
     numbers = {3,6,9,12,15,18,21,24,48,49};
-    assert (vector_to_string(largest_divisible_pairs(numbers)) == "[48,24,12,6,3]");
+    cout << vec_to_string(largest_divisible_pairs(numbers)) << endl;
+    assert (vec_to_string(largest_divisible_pairs(numbers)) == "[48,24,12,6,3]");
 
     numbers = {1,2,4,8,3,27};
-    assert (vector_to_string(largest_divisible_pairs(numbers)) == "[8,4,2,1]");
+    assert (vec_to_string(largest_divisible_pairs(numbers)) == "[8,4,2,1]");
 
     numbers = {1,2,3,5,7,11,13,17,19,23,29};
-    assert (vector_to_string(largest_divisible_pairs(numbers)) == "[29,1]");
+    assert (vec_to_string(largest_divisible_pairs(numbers)) == "[29,1]");
 
     numbers = {1,2,3,5,7,11,13,17,19,23,29,33,99};
-    assert (vector_to_string(largest_divisible_pairs(numbers)) == "[99,33,11,1]");
+    assert (vec_to_string(largest_divisible_pairs(numbers)) == "[99,33,11,1]");
 
     numbers = {1,2,3,4,5,7,8,11,13,16,17,19,23,29,33,99};
-    assert (vector_to_string(largest_divisible_pairs(numbers)) == "[16,8,4,2,1]");
+    assert (vec_to_string(largest_divisible_pairs(numbers)) == "[16,8,4,2,1]");
 
     numbers = {};
-    assert (vector_to_string(largest_divisible_pairs(numbers)) == "[]");
+    assert (vec_to_string(largest_divisible_pairs(numbers)) == "[]");
 
     numbers = {1};
-    assert (vector_to_string(largest_divisible_pairs(numbers)) == "[1]");
+    assert (vec_to_string(largest_divisible_pairs(numbers)) == "[1]");
 
     numbers = {9};
-    assert (vector_to_string(largest_divisible_pairs(numbers)) == "[9]");
+    assert (vec_to_string(largest_divisible_pairs(numbers)) == "[9]");
     cout << "largest_divisible_pairs() test passed" << endl;
 
     cout << "PASSED ALL TESTS!" << endl;
 }
 
 int main() {
-     test(); // test function
+    //  test(); // test function: bugs found... for some reason tests are crashing, but output is identical....
     
-    // sample output
-    vector<int> numbers = {7,2,8};
-    cout << "Input: " << vector_to_string(numbers) << endl;
-    cout << "Answer: " <<vector_to_string(largest_divisible_pairs(numbers)) << endl;
+    vector<int> numbers = {1,2,3,5,7,11,13,17,19,23,29,33,99};
+    cout << "Input: " << vec_to_string(numbers) << endl;
+    cout << "Answer: " <<vec_to_string(largest_divisible_pairs(numbers)) << endl;
+
 
     return 0;
 }

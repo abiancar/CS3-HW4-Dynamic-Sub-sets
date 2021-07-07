@@ -1,1 +1,10 @@
+Computer Science III : Assignment #4
 
+Fourth assignment completed for Computer Science III course at Franklin & Marshall College. This assignment pushes students to solve a theoretical problem by first using
+recursion, and then coming up with a dynamic programming approach. 
+
+The final commit of the divisiblePairs.cpp program uses dynamic programming to find the longest sub-set of a list, such that all of the items
+in the subset can be taken as pairs where the larger value of the pair is perfectly divisible by the smaller. Earlier commits of this program 
+solve the problem recursively. 
+
+Please read pdf of assignment descriptions to see full instructions.
